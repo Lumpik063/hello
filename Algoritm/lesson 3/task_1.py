@@ -1,82 +1,115 @@
-"""
-Задание 2.
-Ваша программа должна запрашивать пароль
-Для этого пароля вам нужно вычислить хеш, используя алгоритм sha256
-Для генерации хеша обязательно нужно использовать криптографическую соль
-Обязательно выведите созданный хеш
-Далее программа должна запросить пароль повторно и вновь вычислить хеш
-Вам нужно проверить, совпадает ли пароль с исходным
-Для проверки необходимо сравнить хеши паролей
-ПРИМЕР:
-Введите пароль: 123
-В базе данных хранится строка: 555a3581d37993843efd4eba1921
-f1dcaeeafeb855965535d77c55782349444b
-Введите пароль еще раз для проверки: 123
-Вы ввели правильный пароль
-Важно: для хранения хеша и соли воспользуйтесь или файлом (CSV, JSON)
-или, если вы уже знаете, как Python взаимодействует с базами данных,
-воспользуйтесь базой данный sqlite, postgres и т.д.
-п.с. статья на Хабре - python db-api
-"""
+'''Задание 1.
+Реализуйте функции:
+a) заполнение списка, оцените сложность в O-нотации (операции нужно провдить в цикле)
+   заполнение словаря, оцените сложность в O-нотации (операции нужно провдить в цикле)
+   сделайте аналитику, что заполняется быстрее и почему
+   сделайте замеры времени
+b) получение элемента списка, оцените сложность в O-нотации (операции нужно провдить в цикле)
+   получение элемента словаря, оцените сложность в O-нотации (операции нужно провдить в цикле)
+   сделайте аналитику, что заполняется быстрее и почему
+   сделайте замеры времени
+с) удаление элемента списка, оцените сложность в O-нотации (операции нужно провдить в цикле)
+   удаление элемента словаря, оцените сложность в O-нотации (операции нужно провдить в цикле)
+   сделайте аналитику, что заполняется быстрее и почему
+   сделайте замеры времени
+ВНИМАНИЕ: в задании три пункта
+НУЖНО выполнить каждый пункт
+обязательно отделяя каждый пункт друг от друга
+Подсказка: для замеров воспользуйтесь модулем time (см. примеры урока 1)
+вы уже знаете, что такое декоратор и как его реализовать,
+обязательно реализуйте ф-цию-декоратор и пусть она считает время
+И примените ее к своим функциям!"""
+import time
+'''
 
-import hashlib
-import json
-
-
-class HashPass:
-    def __init__(self):
-        self.data = {'login1': 'pass1'}
-        self.namejson = 'Hash_passwrd.json'
-        self.input_login()
-
-    def input_login(self):
-        login = input('Введите логин: ')
-        if login not in self.read_json():
-            print('Пользователь с логином', login, 'не существует')
-            self.registration()
-            return
-        count = 3
-        while count > -1:
-            passwrd = input('введите пароль:')
-            if count == 0:
-                print('Пароль неверный. Попытки кончились.')
-                break
-            elif self.read_json()[login] == self.hashpass(passwrd, login):
-                print('Авторизация пройдена')
-                break
-            else:
-                print('Пароль неверный. У вас осталось попыток', count)
-                count -= 1
-
-    def registration(self):
-        answer = input('Создать новую учетную запись? Да/Нет: ')
-        if answer == 'Да':
-            new_login = input('Введите новый логин:')
-            if new_login in self.read_json():
-                print('Ваш логин неуникальный:')
-                return self.registration()
-            new_passwrd = input('Введите пароль: ')
-            print('вы авторизованы')
-            self.write_json(new_login, new_passwrd)
-        else:
-            print('Вы отказались от регистрации.')
-        return
-
-    def write_json(self, login, passwrd):
-        with open(self.namejson, encoding='utf-8') as f:
-            data = json.load(f)
-            data[login] = self.hashpass(passwrd, login)
-            with open(self.namejson, 'w', encoding='utf-8') as out_f:
-                json.dump(data, out_f)
-
-    def read_json(self):
-        with open(self.namejson, 'r', encoding='utf-8') as f_json:
-            data = json.load(f_json)
-            return data
-
-    def hashpass(self, passwrd, login):
-        hash_passwrd = hashlib.sha256(passwrd.encode() + login.encode()).hexdigest()
-        return hash_passwrd
+def timer_wrapper(func):
+    def timer(args, kwargs):
+        star_timer = time.perf_counter()
+        func(args, kwargs)
+        stop_timer = time.perf_counter()
+        return print(func.__name__, stop_timer - star_timer)
+    return timer
 
 
-x = HashPass()
+''' add_list - заполняет список '''
+@timer_wrapper
+def add_list(mylist, nums):
+    for i in range(nums):
+        mylist.append(i)   #O(1)
+    return mylist
+
+
+my_list = []
+num = 3**10
+add_list(my_list, num)
+
+
+''' add_dict - заполняет словарь '''
+@timer_wrapper
+def add_dict(mydict, nums):
+    for i in range(nums):
+        mydict[i] = True      #O(1)
+    return mydict
+
+
+my_dict = {}
+num = 3**10
+add_dict(my_dict, num)
+
+
+'''take_elem_list - получает значения из списка'''
+@timer_wrapper
+def take_elem_list(mylist, num):
+    for i in range(num):
+        return mylist[i] #0(1)
+
+
+nums2 = 2000
+take_elem_list(my_list, nums2)
+
+
+'''take_elem_dict - получает значения из словаря'''
+@timer_wrapper
+def take_elem_dict(mydict, num):
+    for i in range(num):
+        return mydict.get(i) #O(1)
+
+
+nums2 = 2000
+take_elem_dict(my_dict, nums2)
+
+'''del_elem_list - удаляет элементы из списка'''
+@timer_wrapper
+def del_elem_list(mylist, num):
+    for i in range(num):
+        mylist.pop(i)  #O(1)
+    return mylist
+
+
+num3 = 10000
+del_elem_list(my_list, num3)
+
+
+'''del_elem_dict - удаляет элементы из словаря'''
+@timer_wrapper
+def del_elem_dict(mydict, num):
+    for i in range(num):
+        mydict.pop(i)  #O(1)
+    return mydict
+
+
+num3 = 10000
+del_elem_dict(my_dict, num3)
+
+'''Вывод:
+Заполнение словаря занимает больше времени из-за того, что ему неоходимо хешировать данные.
+add_list 0.008433319046162069
+add_dict 0.012216356000863016
+Получение значение у словаря тоже занимает меньше времени, потому что сравниваются хеши ключей, 
+а списки перебираются
+take_elem_list 1.1290016118437052e-05
+take_elem_dict 1.0775984264910221e-05
+Тут я не знаю почему такия разница.
+Удаление списка намного медленее потому что...(и тут преподаватель объясняет)
+del_elem_list 0.23062668996863067
+del_elem_dict 0.0015020280261524022'''
